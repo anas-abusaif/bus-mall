@@ -27,8 +27,8 @@ let leftProduct=document.getElementById('left');
 let middleProduct=document.getElementById('middle');
 let rightProduct=document.getElementById('right');
 let list=document.getElementById('list');
-let liSection=document.getElementById('liSection');
 let buttonSection =document.getElementById('buttonSection');
+let setForm=document.getElementById('setForm');
 
 
 function randomNumber( min, max ) {
@@ -50,11 +50,14 @@ Product.all=[];
 for (let i=0; i<productArray.length; i++){
   new Product(productArray[i].split('.')[0], productArray[i]);
 }
+let randomLeft;
+let randomMiddle;
+let randomRight;
 
 function display(){
-  let randomLeft= randomNumber(0, productArray.length-1);
-  let randomMiddle= randomNumber(0, productArray.length-1);
-  let randomRight= randomNumber(0, productArray.length-1);
+  randomLeft= randomNumber(0, productArray.length-1);
+  randomMiddle= randomNumber(0, productArray.length-1);
+  randomRight= randomNumber(0, productArray.length-1);
   do{
     randomLeft= randomNumber(0, productArray.length-1);
     randomMiddle= randomNumber(0, productArray.length-1);
@@ -67,25 +70,47 @@ function display(){
   Product.all[randomLeft].views++;
   Product.all[randomMiddle].views++;
   Product.all[randomRight].views++;
-  Product.all[randomLeft].clicks++;
-  Product.all[randomMiddle].clicks++;
-  Product.all[randomRight].clicks++;
 }
 display();
 let attempts=0;
+let defaultAttempts;
+function setAttempts(event){
+  event.preventDefault();
+  let value=document.getElementById('numInput').value;
+  console.log(value);
+  if(value){
+    defaultAttempts=Number(value);
+  }else{defaultAttempts=25;
+  }
+  productsSection.addEventListener('click', chooseProduct);
+}
+
+setForm.addEventListener('submit', setAttempts);
+
 function chooseProduct(choose){
-  if((choose.target.id==='left' || choose.target.id==='middle' || choose.target.id==='right') && attempts<25){
+  if(choose.target.id==='left' && attempts<defaultAttempts){
     attempts++;
+    Product.all[randomLeft].clicks++;
     display();
-  }else if(attempts===25){
+  }else if(choose.target.id==='middle' && attempts<defaultAttempts){
+    attempts++;
+    Product.all[randomMiddle].clicks++;
+    display();
+  }else if(choose.target.id==='right' && attempts<defaultAttempts){
+    attempts++;
+    Product.all[randomRight].views++;
+    display();
+  }else if(attempts===defaultAttempts){
+    console.log('hello');
     let thanks=document.createElement('p');
     thanks.textContent=('thank you for choosing our products');
     buttonSection.appendChild(thanks);
     viewResults();
+    productsSection.removeEventListener('click', chooseProduct);
   }
 
 }
-productsSection.addEventListener('click', chooseProduct);
+
 
 
 let button=document.createElement('button');
@@ -100,5 +125,6 @@ function element (){
     element.textContent=(`${productArray[i].split('.')[0]} had ${Product.all[i].clicks} votes, and was seen ${Product.all[i].views} times.`);
     list.appendChild(element);
   }
+  button.removeEventListener('click', element);
 }
 button.addEventListener('click',element);

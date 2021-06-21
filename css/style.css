@@ -6,3 +6,6 @@
 img{
   object-fit: cover;
 }
+#list li{
+  list-style: armenian;
+}
