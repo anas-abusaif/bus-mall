@@ -21,15 +21,14 @@ let productArray=[
   'water-can.jpg',
   'wine-glass.jpg'
 ];
+
 let randomLeft;
 let randomMiddle;
 let randomRight;
 let randomLeftRepeat;
 let randomMiddleRepeat;
 let randomRightRepeat;
-let previosData=JSON.parse(localStorage.getItem('preData'));
-let allProductViews=0;
-let allProductClicks=0;
+
 
 
 let productsSection=document.getElementById('productsSection');
@@ -49,16 +48,12 @@ function randomNumber( min, max ) {
 function Product (name, path){
   this.name= name;
   this.path=`./images/${path}`;
-  this.views=allProductViews;
-  this.clicks=allProductClicks;
+  this.views=0;
+  this.clicks=0;
   Product.all.push(this);
 }
 Product.all=[];
 
-for (let i=0; i<productArray.length; i++){
-  new Product(productArray[i].split('.')[0], productArray[i]);
-
-}
 function display(){
 
 
@@ -73,25 +68,19 @@ function display(){
     }
   }while(randomLeft===randomMiddle || randomLeft===randomRight || randomMiddle===randomRight);
 
-  if(previosData){
-    allProductViews=previosData[randomLeft].views;
-    allProductViews=previosData[randomMiddle].views;
-    allProductViews=previosData[randomRight].views;
-   
-  }
   leftProduct.src=Product.all[randomLeft].path;
   middleProduct.src=Product.all[randomMiddle].path;
   rightProduct.src=Product.all[randomRight].path;
-  console.log(previosData[randomLeft].views);
+
   randomLeftRepeat=randomLeft;
   randomMiddleRepeat=randomMiddle;
   randomRightRepeat=randomRight;
   Product.all[randomLeft].views++;
   Product.all[randomMiddle].views++;
   Product.all[randomRight].views++;
-  
+
 }
-display();
+
 
 let attempts=0;
 let defaultAttempts=25;
@@ -107,23 +96,17 @@ setForm.addEventListener('submit', setAttempts);
 
 function chooseProduct(choose){
   if(choose.target.id==='left' && attempts<defaultAttempts){
-    if(previosData){
-      allProductClicks=previosData[randomLeft].clicks;
-    }
+
     attempts++;
     Product.all[randomLeft].clicks++;
     display();
   }else if(choose.target.id==='middle' && attempts<defaultAttempts){
-    if(previosData){
-      allProductClicks=previosData[randomMiddle].clicks;
-    }
+
     attempts++;
     Product.all[randomMiddle].clicks++;
     display();
   }else if(choose.target.id==='right' && attempts<defaultAttempts){
-    if(previosData){
-      allProductClicks=previosData[randomRight].clicks;
-    }
+
     attempts++;
     Product.all[randomRight].clicks++;
     display();
@@ -132,8 +115,6 @@ function chooseProduct(choose){
     thanks.textContent=('thank you for choosing our products');
     pSection.appendChild(thanks);
     productsSection.removeEventListener('click', chooseProduct);
-    localStorage.setItem('preData',JSON.stringify(Product.all));
-
   }
 
 }
@@ -145,8 +126,9 @@ function element (){
     list.appendChild(element);
   }
   chartView();
+  storeData(),
   viewButton.removeEventListener('click',element);
-
+  productsSection.removeEventListener('click', chooseProduct);
 }
 viewButton.addEventListener('click',element);
 
@@ -219,4 +201,23 @@ function chartView(){
 
 
 
+function storeData(){
+  let storedData=JSON.stringify(Product.all);
+  localStorage.setItem('preData',storedData);
+}
 
+function retriveData(){
+  let retvivedData=localStorage.getItem('preData');
+
+  if(retvivedData) {
+    Product.all=JSON.parse(retvivedData);
+  }else {
+
+    for (let i=0; i<productArray.length; i++){
+      new Product(productArray[i].split('.')[0], productArray[i]);
+    }
+
+  }
+  display();
+}
+retriveData();
