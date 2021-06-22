@@ -1,5 +1,4 @@
 'use strict';
-
 let productArray=[
   'bag.jpg',
   'banana.jpg',
@@ -22,6 +21,17 @@ let productArray=[
   'water-can.jpg',
   'wine-glass.jpg'
 ];
+let randomLeft;
+let randomMiddle;
+let randomRight;
+let randomLeftRepeat;
+let randomMiddleRepeat;
+let randomRightRepeat;
+let previosData=JSON.parse(localStorage.getItem('preData'));
+let allProductViews=0;
+let allProductClicks=0;
+
+
 let productsSection=document.getElementById('productsSection');
 let leftProduct=document.getElementById('left');
 let middleProduct=document.getElementById('middle');
@@ -30,33 +40,28 @@ let list=document.getElementById('list');
 let setForm=document.getElementById('setForm');
 let viewButton=document.getElementById('viewButton');
 let pSection=document.getElementById('pSection');
+
 function randomNumber( min, max ) {
   min = Math.ceil( min );
   max = Math.floor( max );
   return Math.floor( Math.random() * ( max - min + 1 ) + min );
 }
-
-
 function Product (name, path){
   this.name= name;
   this.path=`./images/${path}`;
-  this.views=0;
-  this.clicks=0;
+  this.views=allProductViews;
+  this.clicks=allProductClicks;
   Product.all.push(this);
 }
 Product.all=[];
 
 for (let i=0; i<productArray.length; i++){
   new Product(productArray[i].split('.')[0], productArray[i]);
-}
-let randomLeft;
-let randomMiddle;
-let randomRight;
-let randomLeftRepeat;
-let randomMiddleRepeat;
-let randomRightRepeat;
 
+}
 function display(){
+
+
   do{
     randomLeft= randomNumber(0, productArray.length-1);
     randomMiddle= randomNumber(0, productArray.length-1);
@@ -67,63 +72,81 @@ function display(){
       randomRight= randomNumber(0, productArray.length-1);
     }
   }while(randomLeft===randomMiddle || randomLeft===randomRight || randomMiddle===randomRight);
+
+  if(previosData){
+    allProductViews=previosData[randomLeft].views;
+    allProductViews=previosData[randomMiddle].views;
+    allProductViews=previosData[randomRight].views;
+   
+  }
   leftProduct.src=Product.all[randomLeft].path;
   middleProduct.src=Product.all[randomMiddle].path;
   rightProduct.src=Product.all[randomRight].path;
-
+  console.log(previosData[randomLeft].views);
   randomLeftRepeat=randomLeft;
   randomMiddleRepeat=randomMiddle;
   randomRightRepeat=randomRight;
-  console.log( randomLeftRepeat,randomMiddleRepeat,randomRightRepeat );
   Product.all[randomLeft].views++;
   Product.all[randomMiddle].views++;
   Product.all[randomRight].views++;
-
+  
 }
 display();
+
 let attempts=0;
-let defaultAttempts;
+let defaultAttempts=25;
 function setAttempts(event){
   event.preventDefault();
   let value=document.getElementById('numInput').value;
   if(value){
     defaultAttempts=Number(value);
-  }else{defaultAttempts=25;
   }
-  productsSection.addEventListener('click', chooseProduct);
 }
 
 setForm.addEventListener('submit', setAttempts);
 
 function chooseProduct(choose){
   if(choose.target.id==='left' && attempts<defaultAttempts){
+    if(previosData){
+      allProductClicks=previosData[randomLeft].clicks;
+    }
     attempts++;
     Product.all[randomLeft].clicks++;
     display();
   }else if(choose.target.id==='middle' && attempts<defaultAttempts){
+    if(previosData){
+      allProductClicks=previosData[randomMiddle].clicks;
+    }
     attempts++;
     Product.all[randomMiddle].clicks++;
     display();
   }else if(choose.target.id==='right' && attempts<defaultAttempts){
+    if(previosData){
+      allProductClicks=previosData[randomRight].clicks;
+    }
     attempts++;
-    Product.all[randomRight].views++;
+    Product.all[randomRight].clicks++;
     display();
   }else if(attempts===defaultAttempts){
     let thanks=document.createElement('p');
     thanks.textContent=('thank you for choosing our products');
     pSection.appendChild(thanks);
+    productsSection.removeEventListener('click', chooseProduct);
+    localStorage.setItem('preData',JSON.stringify(Product.all));
+
   }
 
 }
-
+productsSection.addEventListener('click', chooseProduct);
 function element (){
-  for(let i=0; i<productArray.length-1; i++){
+  for(let i=0; i<productArray.length; i++){
     let element=document.createElement('li');
     element.textContent=(`${productArray[i].split('.')[0]} had ${Product.all[i].clicks} votes, and was seen ${Product.all[i].views} times.`);
     list.appendChild(element);
   }
   chartView();
-  viewButton.removeEventListener('click', element);
+  viewButton.removeEventListener('click',element);
+
 }
 viewButton.addEventListener('click',element);
 
@@ -136,14 +159,13 @@ function chartView(){
     barViews.push(Product.all[i].views);
     barClicks.push(Product.all[i].clicks);
   }
-  console.log(barViews);
   let ctx = document.getElementById('myChart').getContext('2d');
   let myChart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: barName,
       datasets: [{
-        label: '# of Votes',
+        label: '# of Views',
         data: barViews,
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
@@ -164,7 +186,7 @@ function chartView(){
         borderWidth: 1
       },
       {
-        label: '# of clicks',
+        label: '# of Votes',
         data: barClicks,
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
@@ -194,3 +216,7 @@ function chartView(){
     }
   });
 }
+
+
+
+
